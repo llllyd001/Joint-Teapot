@@ -439,11 +439,12 @@ class Teapot:
                 f"max count={max_count}, submit count={submit_count}"
             )
             use_group = True
+            keyword_placeholder = ""
             if name:
-                comment += f"keyword `{name}` "
+                keyword_placeholder = f", with keyword `{name}`"
                 use_group = name.lower() in env.joj3_groups.lower()
             comment += (
-                f"In last {time_period} hour(s): "
+                f"In last {time_period} hour(s) {keyword_placeholder}: "
                 f"submit count {submit_count}, "
                 f"max count {max_count}"
             )
