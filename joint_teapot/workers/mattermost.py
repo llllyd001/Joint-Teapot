@@ -7,6 +7,7 @@ from mattermostdriver import Driver
 from joint_teapot.config import settings
 from joint_teapot.utils.logger import logger
 from joint_teapot.workers.gitea import Gitea
+from joint_teapot.workers.canvas import User
 
 
 class Mattermost:
@@ -229,14 +230,21 @@ class Mattermost:
                 logger.warning(f"Error when creating outgoing webhook at Gitea: {e}")
 
     # unused since we can give students invitation links instead
-    def invite_students_to_team(self, students: List[str]) -> None:
+    def invite_students_to_team(self, students: List[User]) -> None:
         for student in students:
+            username = student.login_id
+
+            if not username:
+                student_id = getattr(student, 'id', 'unknown')
+                logger.warning(f"Student {student_id} has no login_id, skipping")
+                continue
+
             try:
-                mmuser = self.endpoint.users.get_user_by_username(student)
+                mmuser = self.endpoint.users.get_user_by_username(username)
             except Exception:
-                logger.warning(f"User {student} is not found on the Mattermost server")
+                logger.warning(f"User {username} is not found on the Mattermost server")
                 continue
             self.endpoint.teams.add_user_to_team(
                 self.team["id"], {"user_id": mmuser["id"], "team_id": self.team["id"]}
             )
-            logger.info(f"Added user {student} to team {self.team['name']}")
+            logger.info(f"Added user {username} to team {self.team['name']}")
